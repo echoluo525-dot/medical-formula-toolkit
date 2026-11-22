@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Formula, InputType } from '../types';
-import { ArrowLeft, RefreshCw, Info, Sparkles, ChevronDown } from 'lucide-react';
-import { getClinicalExplanation } from '../services/geminiService';
+import { ArrowLeft, RefreshCw, Info, Sparkles, ChevronDown, KeyRound } from 'lucide-react';
+import { getApiKey, setApiKey, hasApiKey } from '../services/aiKey';
 
 interface CalculatorProps {
   formula: Formula;
@@ -13,6 +13,9 @@ const Calculator: React.FC<CalculatorProps> = ({ formula, onBack }) => {
   const [result, setResult] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [showKeyPanel, setShowKeyPanel] = useState(false);
+  const [keyDraft, setKeyDraft] = useState(getApiKey());
+  const [keyReady, setKeyReady] = useState(hasApiKey());
 
   useEffect(() => {
     // Scroll to top when formula opens
@@ -26,6 +29,7 @@ const Calculator: React.FC<CalculatorProps> = ({ formula, onBack }) => {
     setValues(defaults);
     setResult(null);
     setAiExplanation(null);
+    setShowKeyPanel(false);
   }, [formula]);
 
   useEffect(() => {
@@ -40,16 +44,33 @@ const Calculator: React.FC<CalculatorProps> = ({ formula, onBack }) => {
 
   const handleAskAI = async () => {
     if (!result || result.value === '---') return;
-    
+
+    // 没有 Key 就先让访客填一次，不静默失败
+    if (!hasApiKey()) {
+      setShowKeyPanel(true);
+      return;
+    }
+
     setAiLoading(true);
+    // 按需加载：@google/genai 只在真正要解读时才下载，首屏不为它付代价
+    const { getClinicalExplanation } = await import('../services/geminiService');
     const explanation = await getClinicalExplanation(
       formula.title,
-      values,
+      formula.description,
+      formula.inputs.map(input => ({ label: input.label, value: values[input.id] })),
       result.value,
       result.unit
     );
     setAiExplanation(explanation);
     setAiLoading(false);
+  };
+
+  const saveKey = () => {
+    if (!keyDraft.trim()) return;
+    setApiKey(keyDraft);
+    setKeyReady(true);
+    setShowKeyPanel(false);
+    void handleAskAI();
   };
 
   const getResultColorClass = (color?: string) => {
@@ -161,6 +182,40 @@ const Calculator: React.FC<CalculatorProps> = ({ formula, onBack }) => {
 
             {/* AI Action */}
             <div className="mt-6 flex-1 flex flex-col justify-end">
+              {showKeyPanel && (
+                <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-left">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700">
+                    <KeyRound className="w-3.5 h-3.5" /> 需要你自己的 Gemini API Key
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-amber-800">
+                    本站是纯静态页面，不保存任何服务端密钥。填入自己的 Key 后才能调用 AI，
+                    Key 只存在这台设备的浏览器里。
+                    <a
+                      href="https://aistudio.google.com/apikey"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ml-1 underline decoration-amber-400 underline-offset-2 hover:text-amber-900"
+                    >
+                      去获取一枚
+                    </a>
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="password"
+                      value={keyDraft}
+                      onChange={e => setKeyDraft(e.target.value)}
+                      placeholder="AIza..."
+                      className="flex-1 rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm outline-none focus:border-amber-500"
+                    />
+                    <button
+                      onClick={saveKey}
+                      className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+                    >
+                      保存并解读
+                    </button>
+                  </div>
+                </div>
+              )}
               {!aiExplanation ? (
                 <button
                   onClick={handleAskAI}
@@ -178,6 +233,7 @@ const Calculator: React.FC<CalculatorProps> = ({ formula, onBack }) => {
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" /> AI 临床智能解读
+                      {!keyReady && <span className="text-[11px] font-normal opacity-80">（需自带 Key）</span>}
                     </>
                   )}
                 </button>

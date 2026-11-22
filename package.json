@@ -1,22 +1,29 @@
 {
-  "name": "medical-tools-医学公式",
+  "name": "medical-formula-toolkit",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
+  "description": "面向肿瘤科的临床计算工具集：公式 + 文献出处 + 可选的 AI 解读",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^19.2.1",
     "@google/genai": "^1.31.0",
-    "react-dom": "^19.2.1",
-    "lucide-react": "^0.556.0"
+    "lucide-react": "^0.556.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Formula } from './types';
 import FormulaList from './components/FormulaList';
 import Calculator from './components/Calculator';
-import { Stethoscope, ShieldCheck } from 'lucide-react';
+import { Stethoscope, ShieldCheck, ShieldAlert } from 'lucide-react';
 
 const App: React.FC = () => {
   const [selectedFormula, setSelectedFormula] = useState<Formula | null>(null);
@@ -35,8 +35,8 @@ const App: React.FC = () => {
                 onClick={(e) => e.preventDefault()}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">仅供医疗专业人士使用</span>
-                <span className="sm:hidden">专业版</span>
+                <span className="hidden sm:inline">仅供医学教育与研究参考</span>
+                <span className="sm:hidden">仅供研究参考</span>
               </a>
             </div>
           </div>
@@ -58,8 +58,16 @@ const App: React.FC = () => {
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">常用临床公式</h2>
               <p className="text-slate-600 max-w-3xl leading-relaxed text-sm sm:text-base">
                 专为中国医生打造的智能计算平台，涵盖肿瘤科、内科、外科及麻醉科常用公式。
-                <span className="hidden sm:inline"> 集成AI辅助解读功能，提升临床决策效率。</span>
+                <span className="hidden sm:inline"> 每个公式都标了出处，AI 解读由你自带的 Key 调用。</span>
               </p>
+
+              <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-xs leading-relaxed text-amber-800">
+                <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                <span>
+                  本工具用于医学教育、科研与自测。公式按所引文献实现，<strong>不构成诊疗建议</strong>，
+                  不可替代医生的专业判断；用于临床前务必独立核对输入值与单位。
+                </span>
+              </div>
             </div>
             <FormulaList onSelect={setSelectedFormula} />
           </div>
@@ -73,8 +81,11 @@ const App: React.FC = () => {
             <p className="font-medium">
               © {new Date().getFullYear()} 医学公式宝典 (MedFormula Pro)
             </p>
-            <p className="max-w-md mx-auto leading-relaxed">
+            <p className="max-w-xl mx-auto leading-relaxed">
               本工具仅作为临床辅助参考，不能替代医生的专业判断。使用前请独立核实计算结果。
+            </p>
+            <p className="max-w-xl mx-auto leading-relaxed">
+              AI 解读由访客自带的 Gemini API Key 调用，内容为模型生成，未经人工审核。
             </p>
           </div>
         </div>
